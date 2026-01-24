@@ -48,11 +48,13 @@ function loadRow(title, endpoint){
       html += `
         <div class="poster"
         style="background-image:url(${IMG}${item.poster_path})"
-        onclick="openFicha(
-          '${item.title || item.name}',
-          '${item.overview}',
-          '${IMG}${item.poster_path}'
-        )"></div>`;
+      onclick="openFicha(
+  '${item.title}',
+  '${item.overview}',
+  '${IMG}${item.poster_path}',
+  ${item.id},
+  'movie'
+)"></div>`;
     });
     html += '</div></div>';
     document.getElementById('content').innerHTML += html;
