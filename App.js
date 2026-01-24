@@ -172,22 +172,34 @@ function loadRealSeasons(tvId){
 }
 
 function loadEpisodes(tvId, seasonNumber){
-  fetch(`${API}/tv/${tvId}/season/${seasonNumber}?api_key=${API_KEY}&language=es-ES`)
+  const feed = `${location.origin}/feeds/posts/default/-/tmdb-${tvId}?alt=json&max-results=50`;
+
+  fetch(feed)
   .then(r => r.json())
   .then(data => {
     let html = '';
-    data.episodes.forEach(ep => {
-      const video =
-        VIDEOS[tvId] &&
-        VIDEOS[tvId][seasonNumber] &&
-        VIDEOS[tvId][seasonNumber][ep.episode_number];
 
-      html += `
-        <li onclick="playEpisode('${video || ''}')">
-          Cap ${ep.episode_number} - ${ep.name}
-        </li>
-      `;
-    });
+    if(!data.feed.entry){
+      html = '<li>No hay episodios disponibles</li>';
+    } else {
+      data.feed.entry.forEach(post => {
+        const tags = post.category.map(c => c.term);
+        const epTag = tags.find(t => t.startsWith('episode-'));
+        const seasonTag = tags.find(t => t === `season-${seasonNumber}`);
+
+        if(!epTag || !seasonTag) return;
+
+        const epNumber = epTag.split('-')[1];
+        const content = post.content.$t.trim();
+
+        html += `
+          <li onclick="playEpisode('${content}')">
+            Cap ${epNumber} - ${post.title.$t}
+          </li>
+        `;
+      });
+    }
+
     document.getElementById(`season-${seasonNumber}`).innerHTML = html;
   });
 }
