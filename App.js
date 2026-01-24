@@ -6,6 +6,27 @@ const API = 'https://api.themoviedb.org/3';
 const IMG = 'https://image.tmdb.org/t/p/original';
 
 /* ===============================
+   MAPA DE VIDEOS (DRIVE / MP4)
+================================ */
+const VIDEOS = {
+  1399: { // Game of Thrones
+    1: {
+      1: 'https://drive.google.com/file/d/ID_EP1/preview',
+      2: 'https://drive.google.com/file/d/ID_EP2/preview'
+    },
+    2: {
+      1: 'https://drive.google.com/file/d/ID_T2E1/preview'
+    }
+  },
+
+  94997: { // House of the Dragon
+    1: {
+      1: 'https://drive.google.com/file/d/ID_EP1/preview'
+    }
+  }
+};
+
+/* ===============================
    HERO SLIDER (DESTACADO)
 ================================ */
 fetch(`${API}/trending/all/week?api_key=${API_KEY}&language=es-ES`)
@@ -102,12 +123,30 @@ function loadSeasons(){
 /* ===============================
    PLAYER
 ================================ */
-function playVideo(){
+function playEpisode(url){
+  if(!url){
+    alert('Este episodio no tiene video asignado');
+    return;
+  }
+
+  const iframe = document.getElementById('video');
   document.getElementById('player').style.display = 'block';
-  document.getElementById('video').src =
-  'https://drive.google.com/file/d/ID_DEL_VIDEO/preview';
+
+  if(url.includes('.mp4')){
+    iframe.outerHTML = `
+      <video id="video" controls autoplay style="width:100%;height:100%">
+        <source src="${url}" type="video/mp4">
+      </video>`;
+  } else {
+    iframe.outerHTML = `
+      <iframe id="video" src="${url}" allowfullscreen></iframe>`;
+  }
 }
 
+function closePlayer(){
+  document.getElementById('player').style.display = 'none';
+  document.getElementById('video').src = '';
+}
 function closePlayer(){
   document.getElementById('player').style.display = 'none';
   document.getElementById('video').src = '';
@@ -138,8 +177,13 @@ function loadEpisodes(tvId, seasonNumber){
   .then(data => {
     let html = '';
     data.episodes.forEach(ep => {
+      const video =
+        VIDEOS[tvId] &&
+        VIDEOS[tvId][seasonNumber] &&
+        VIDEOS[tvId][seasonNumber][ep.episode_number];
+
       html += `
-        <li onclick="playVideo()">
+        <li onclick="playEpisode('${video || ''}')">
           Cap ${ep.episode_number} - ${ep.name}
         </li>
       `;
