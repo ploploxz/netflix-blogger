@@ -49,6 +49,13 @@ function loadRow(title, endpoint){
         <div class="poster"
         style="background-image:url(${IMG}${item.poster_path})"
       onclick="openFicha(
+  '${item.name}',
+  '${item.overview}',
+  '${IMG}${item.poster_path}',
+  ${item.id},
+  'tv'
+)"
+      onclick="openFicha(
   '${item.title}',
   '${item.overview}',
   '${IMG}${item.poster_path}',
@@ -104,4 +111,39 @@ function playVideo(){
 function closePlayer(){
   document.getElementById('player').style.display = 'none';
   document.getElementById('video').src = '';
+}
+function loadRealSeasons(tvId){
+  fetch(`${API}/tv/${tvId}?api_key=${API_KEY}&language=es-ES`)
+  .then(r => r.json())
+  .then(data => {
+    let html = '<h3>Temporadas</h3>';
+    data.seasons.forEach(season => {
+      if(season.season_number === 0) return;
+      html += `
+        <div class="season">
+          <h4 onclick="loadEpisodes(${tvId}, ${season.season_number})">
+            Temporada ${season.season_number} (${season.episode_count} episodios)
+          </h4>
+          <ul id="season-${season.season_number}"></ul>
+        </div>
+      `;
+    });
+    document.getElementById('seasons').innerHTML = html;
+  });
+}
+
+function loadEpisodes(tvId, seasonNumber){
+  fetch(`${API}/tv/${tvId}/season/${seasonNumber}?api_key=${API_KEY}&language=es-ES`)
+  .then(r => r.json())
+  .then(data => {
+    let html = '';
+    data.episodes.forEach(ep => {
+      html += `
+        <li onclick="playVideo()">
+          Cap ${ep.episode_number} - ${ep.name}
+        </li>
+      `;
+    });
+    document.getElementById(`season-${seasonNumber}`).innerHTML = html;
+  });
 }
